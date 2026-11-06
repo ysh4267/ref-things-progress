@@ -1,22 +1,22 @@
 # Progress Pie
 
-Things 의 프로젝트 진행 원을 레퍼런스 영상과 같은 모양, 같은 움직임으로 다시 그린 페이지.
+A rebuild of the project progress pie from Things, matched to the reference video.
 
-레퍼런스: [Design Spells — Progress indicator animation in Things](https://designspells.com/spells/progress-indicator-animation-in-things)
+Reference: [Design Spells — Progress indicator animation in Things](https://designspells.com/spells/progress-indicator-animation-in-things)
 
-## 담긴 인터랙션
+## Interaction
 
-체크리스트 항목을 누르면 제목 옆 원 안의 파이가 12시부터 시계 방향으로 0.09초 만에 차오르고, 풀면 0.1초 만에 줄어든다. 셋 다 체크하면 꽉 찬 원이 된다.
+Checking an item fills the pie next to the title clockwise from 12 o'clock in 0.09s; unchecking shrinks it in 0.1s. With all three checked the circle is full.
 
-누르는 동안 줄이 회색으로 강조되고 체크박스가 살짝 커진다. 체크하면 파란 칠이 0.17초 차오르고, 0.2초 뒤 체크 표시가 그려지고, 0.33초 뒤 글자가 흐려진다. 화면에는 이 동작에 필요한 제목 줄과 체크리스트만 두고 사이드바와 창 장식은 뺐다.
+While pressed, the row turns grey and the checkbox grows slightly. On check, the blue fill grows over 0.17s, the check mark draws after 0.2s and the label dims after 0.33s. Only the title row and checklist are shown; the sidebar and window chrome are left out.
 
-## 만든 방법
+## How it was made
 
-- 영상(1920x1080)을 프레임 단위로 재서 위치, 크기, 색, 시간을 그대로 옮겼다. 좌표는 영상 픽셀이다.
-- 영상의 글꼴(맥 시스템 글꼴) 대신 Inter 를 쓰고, 글자마다 대문자 높이와 잉크 폭을 영상과 같게 맞춘다.
-- 빌드 없이 `index.html`, `style.css`, `main.js` 만으로 돌아간다.
+- Positions, sizes, colors and timing were measured frame by frame from the video (1920x1080). The video is the app zoomed about 2.4x, so the page draws it at real app size, centered in the window.
+- Inter stands in for the macOS system font, sized so cap height and ink width match the video.
+- No build step: just `index.html`, `style.css` and `main.js`.
 
-## 주소 옵션
+## URL options
 
-- `?demo` : 영상처럼 차례로 체크하고 푸는 동작을 되풀이한다(갤러리 미리보기용).
-- `?full` : 영상 구도 그대로 놓는다(비교용).
+- `?demo`: checks and unchecks the items in turn, as in the video (for the gallery preview).
+- `?full`: keeps the original video framing (for comparison).

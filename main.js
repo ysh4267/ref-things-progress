@@ -1,20 +1,20 @@
-// Things 의 프로젝트 진행 원을 레퍼런스 영상 그대로 다시 그린다.
-// 모든 수치는 영상(1920x1080)을 프레임 단위로 재서 얻은 값이고, 단위는 영상 픽셀이다.
-// 체크리스트 항목을 누르면 제목 옆 원 안의 파이가 12시부터 시계 방향으로 차오르고, 풀면 다시 줄어든다.
-// 화면에는 이 동작에 필요한 제목 줄과 체크리스트만 둔다(사이드바와 창 장식은 뺐다).
+// Recreates the project progress pie of Things from the reference video.
+// All numbers were measured frame by frame from the video (1920x1080), in video pixels.
+// Checking an item fills the pie next to the title clockwise from 12 o'clock; unchecking shrinks it again.
+// Only the title row and checklist are drawn (sidebar and window chrome are left out).
 
 const NS = 'http://www.w3.org/2000/svg';
 const scene = document.getElementById('scene');
 
 const RING = { cx: 829.8, cy: 406.5, r: 29.75, width: 7.5, pie: 21.5, ring: '#79a5ee', fill: '#73a8fb' };
-const SWEEP_ON = 90; // 파이가 차는 시간(ms)
-const SWEEP_OFF = 100; // 줄어드는 시간(ms)
+const SWEEP_ON = 90; // fill time (ms)
+const SWEEP_OFF = 100; // shrink time (ms)
 
-// 영상은 실제 앱 화면을 2.4배쯤 키운 것이라, 화면에는 실제 앱 크기로 줄여 가운데에 둔다.
-// ?full 이면 영상 구도 그대로(비교 도구용).
+// The video is the real app zoomed about 2.4x, so the page draws it at real app size, centered.
+// With ?full the video framing is kept as is (for the comparison tool).
 const FULL = new URLSearchParams(location.search).has('full');
-const SCALE = 0.42; // 영상 1px 이 화면에서 차지하는 크기(CSS px)
-const CONTENT = { x0: 760, x1: 1440, y0: 373, y1: 925 }; // 진행 원, 제목, 체크리스트(줄 강조 띠 포함)가 차지하는 범위
+const SCALE = 0.42; // CSS px per video px
+const CONTENT = { x0: 760, x1: 1440, y0: 373, y1: 925 }; // area taken by the pie, title and checklist (including the row highlight)
 
 const ITEMS = [
   { label: 'Sugar', cy: 712, baseline: 726, ink: 111 },
@@ -29,9 +29,9 @@ function el(tag, attrs = {}, parent = scene) {
   return node;
 }
 
-/* ------------------------------------------------------------- 글자 맞추기 */
+/* ------------------------------------------------------------- text fitting */
 
-// 영상의 글꼴은 맥의 시스템 글꼴이다. Inter 로 대신하되, 대문자 높이와 잉크 폭을 영상과 같게 맞춘다.
+// The video uses the macOS system font. Inter stands in, sized so cap height and ink width match the video.
 const measure = document.createElement('canvas').getContext('2d');
 const capRatio = {};
 const fitted = [];
@@ -65,7 +65,7 @@ function text(spec, attrs = {}, parent = scene) {
   return node;
 }
 
-/* ------------------------------------------------------------- 진행 원 */
+/* ------------------------------------------------------------- progress pie */
 
 function piePath(cx, cy, r, fraction) {
   if (fraction <= 0.0005) return '';
@@ -76,12 +76,12 @@ function piePath(cx, cy, r, fraction) {
   return `M${cx} ${cy}V${cy - r}A${r} ${r} 0 ${fraction > 0.5 ? 1 : 0} 1 ${x.toFixed(3)} ${y.toFixed(3)}Z`;
 }
 
-/* ------------------------------------------------------------- 장면 */
+/* ------------------------------------------------------------- scene */
 
 const rows = [];
 let pie = null;
 
-// 창 크기에 맞춰 보이는 범위를 정한다. 좁은 창에서는 내용이 들어가도록 조금 더 줄인다.
+// Fit the visible area to the window; narrow windows scale down a little more so everything fits.
 function fitView() {
   if (FULL) {
     scene.setAttribute('viewBox', '0 0 1920 1080');
@@ -122,7 +122,7 @@ function build() {
   }
 }
 
-/* ------------------------------------------------------------- 움직임 */
+/* ------------------------------------------------------------- motion */
 
 const progress = { value: 0, from: 0, to: 0, start: 0, ms: 0 };
 let frame = 0;
@@ -153,7 +153,7 @@ function setDone(row, done) {
   sweepTo(count / rows.length, done ? SWEEP_ON : SWEEP_OFF);
 }
 
-// 누르는 동안 줄이 강조되고, 손을 떼는 순간 체크가 바뀐다.
+// The row highlights while pressed and the check toggles on release.
 function wire(row) {
   const press = (on) => row.g.classList.toggle('pressed', on);
   row.hit.addEventListener('pointerdown', (event) => {
@@ -176,9 +176,9 @@ function wire(row) {
   });
 }
 
-/* ------------------------------------------------------------- 시연 */
+/* ------------------------------------------------------------- demo */
 
-// 갤러리 미리보기용. 주소에 ?demo 를 붙이면 영상처럼 차례로 체크하고 푼다.
+// For the gallery preview: with ?demo the items are checked and unchecked in turn, as in the video.
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function tap(row) {
@@ -204,7 +204,7 @@ async function demo() {
   }
 }
 
-// 비교 도구(tools/compare.html?…&page=/things/?full)가 영상의 한 장면과 같은 상태를 바로 만들 때 쓴다.
+// Used by the comparison tool (with ?full) to set the exact state of a video frame.
 window.__page = {
   pose({ done = [], pressed = -1, value } = {}) {
     rows.forEach((row, i) => {
