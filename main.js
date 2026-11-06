@@ -10,9 +10,11 @@ const RING = { cx: 829.8, cy: 406.5, r: 29.75, width: 7.5, pie: 21.5, ring: '#79
 const SWEEP_ON = 90; // 파이가 차는 시간(ms)
 const SWEEP_OFF = 100; // 줄어드는 시간(ms)
 
-// 영상과 같은 크기로, 남긴 요소들이 화면 가운데 오도록 구도를 옮긴다. ?full 이면 영상 구도 그대로(비교 도구용).
+// 영상은 실제 앱 화면을 2.4배쯤 키운 것이라, 화면에는 실제 앱 크기로 줄여 가운데에 둔다.
+// ?full 이면 영상 구도 그대로(비교 도구용).
 const FULL = new URLSearchParams(location.search).has('full');
-const VIEW = FULL ? '0 0 1920 1080' : '60 97 1920 1080';
+const SCALE = 0.42; // 영상 1px 이 화면에서 차지하는 크기(CSS px)
+const CONTENT = { x0: 760, x1: 1440, y0: 373, y1: 925 }; // 진행 원, 제목, 체크리스트(줄 강조 띠 포함)가 차지하는 범위
 
 const ITEMS = [
   { label: 'Sugar', cy: 712, baseline: 726, ink: 111 },
@@ -79,10 +81,27 @@ function piePath(cx, cy, r, fraction) {
 const rows = [];
 let pie = null;
 
+// 창 크기에 맞춰 보이는 범위를 정한다. 좁은 창에서는 내용이 들어가도록 조금 더 줄인다.
+function fitView() {
+  if (FULL) {
+    scene.setAttribute('viewBox', '0 0 1920 1080');
+    scene.setAttribute('preserveAspectRatio', 'xMinYMin slice');
+    return;
+  }
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const k = Math.min(SCALE, (W - 40) / (CONTENT.x1 - CONTENT.x0), (H - 40) / (CONTENT.y1 - CONTENT.y0));
+  const w = W / k;
+  const h = H / k;
+  const cx = (CONTENT.x0 + CONTENT.x1) / 2;
+  const cy = (CONTENT.y0 + CONTENT.y1) / 2;
+  scene.setAttribute('viewBox', `${(cx - w / 2).toFixed(1)} ${(cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+  scene.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+}
+
 function build() {
-  scene.setAttribute('viewBox', VIEW);
-  scene.setAttribute('preserveAspectRatio', FULL ? 'xMinYMin slice' : 'xMidYMid slice');
-  el('rect', { x: -2000, y: -2000, width: 6000, height: 6000, fill: '#232323' });
+  fitView();
+  el('rect', { x: -40000, y: -40000, width: 80000, height: 80000, fill: '#232323' });
 
   el('circle', { cx: RING.cx, cy: RING.cy, r: RING.r, fill: 'none', stroke: RING.ring, 'stroke-width': RING.width });
   pie = el('path', { fill: RING.fill });
@@ -91,7 +110,7 @@ function build() {
 
   for (const item of ITEMS) {
     const g = el('g', { class: 'row' });
-    el('rect', { class: 'band', x: 760, y: item.cy - 42.5, width: 1006, height: 85, rx: 16, fill: '#39393b' }, g);
+    el('rect', { class: 'band', x: 760, y: item.cy - 42.5, width: CONTENT.x1 - 760, height: 85, rx: 16, fill: '#39393b' }, g);
     const box = el('g', { class: 'box' }, g);
     el('rect', { class: 'outline', x: 789.5, y: item.cy - 16.5, width: 33, height: 33, rx: 8, fill: 'none', stroke: '#5d5e5e', 'stroke-width': 2.8 }, box);
     const fill = el('g', { class: 'fill' }, box);
@@ -199,6 +218,7 @@ window.__page = {
 };
 
 build();
+window.addEventListener('resize', fitView);
 for (const row of rows) wire(row);
 drawPie();
 Promise.all([500, 700].map((weight) => document.fonts.load(`${weight} 40px Inter`)))
