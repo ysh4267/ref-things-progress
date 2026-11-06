@@ -1,0 +1,36 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #232323;
+}
+
+#scene {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  font-family: Inter, -apple-system, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* 체크리스트 한 줄. 시간은 영상에서 잰 값이다. */
+.row .band { opacity: 0; }
+.row.pressed .band { opacity: 1; }
+
+.row .box { transform-box: fill-box; transform-origin: center; transition: transform 0.08s ease-out; }
+.row.pressed .box { transform: scale(1.14); }
+
+/* 체크하면: 파란 칠이 0.17초 차오르고, 0.2초 뒤 체크 표시가 그려지고, 0.33초 뒤 글자가 흐려진다. */
+.row .outline { opacity: 1; transition: opacity 0.15s ease; }
+.row.done .outline { opacity: 0; transition: opacity 0.17s ease 0.02s; }
+.row .fill { opacity: 0; transition: opacity 0.15s ease; }
+.row.done .fill { opacity: 1; transition: opacity 0.17s ease 0.02s; }
+.row .check { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 0s linear 0.16s; }
+.row.done .check { stroke-dashoffset: 0; transition: stroke-dashoffset 0.15s ease-out 0.2s; }
+
+/* 풀면: 칠과 체크가 0.15초에 걷히고 글자는 바로 밝아진다. */
+.row .label { fill: #f2f2f2; transition: fill 0.06s ease; }
+.row.done .label { fill: #909090; transition: fill 0.15s ease 0.33s; }
+
+.hit { fill: transparent; cursor: default; outline: none; }
